@@ -331,6 +331,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.7"
+  scrollable_table_view:
+    dependency: "direct main"
+    description:
+      name: scrollable_table_view
+      sha256: "8ca041138f82ba892244d0a1e4011ab429ee0b9a135cec6bc3e0f95081482ecc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   shimmer:
     dependency: "direct main"
     description:

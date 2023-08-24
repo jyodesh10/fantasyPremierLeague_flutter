@@ -5,8 +5,11 @@ import 'package:http/http.dart' as http;
 
 import '../constants/constants.dart';
 import '../model/bootstrap_model.dart';
+import '../model/history_model.dart';
 import '../model/league_model.dart';
 import '../model/picks_model.dart';
+import '../model/player_model.dart';
+import '../model/transfer_model.dart';
 
 
 class FplApi{
@@ -40,6 +43,38 @@ class FplApi{
       return PicksModel.fromJson(data);
     } else {
       throw Exception('Failed to fetch team picks');
+    }
+  }
+
+  Future<HistoryModel> fetchHistory(int teamId) async {
+    final response = await http.get(Uri.parse('$base/entry/$teamId/history/'));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      return HistoryModel.fromJson(data);
+    } else {
+      throw Exception('Failed to fetch history');
+    }
+  }
+
+  Future<List<TransferModel>> fetchTransfer(int teamId) async {
+    final response = await http.get(Uri.parse('$base/entry/$teamId/transfers/'));
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((e) => TransferModel.fromJson(e)).toList();
+    } else {
+      throw Exception('Failed to fetch transfer');
+    }
+  }
+
+  Future<PlayerModel> fetchPlayer(int teamId) async {
+    final response = await http.get(Uri.parse('$base/entry/$teamId/'));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      return PlayerModel.fromJson(data);
+    } else {
+      throw Exception('Failed to fetch player');
     }
   }
 

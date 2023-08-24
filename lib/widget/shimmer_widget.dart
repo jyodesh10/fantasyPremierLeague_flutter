@@ -1,4 +1,4 @@
-import 'package:fantasypl/constants/constatnts.dart';
+import 'package:fantasypl/constants/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 

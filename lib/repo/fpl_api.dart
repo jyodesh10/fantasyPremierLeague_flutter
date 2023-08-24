@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
-import '../constants/constatnts.dart';
+import '../constants/constants.dart';
 import '../model/bootstrap_model.dart';
 import '../model/league_model.dart';
 import '../model/picks_model.dart';

@@ -1,11 +1,12 @@
 
 
 import 'package:fantasypl/model/bootstrap_model.dart';
+import 'package:fantasypl/widget/custom_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tuple/tuple.dart';
-
-import '../constants/constatnts.dart';
+import 'package:gradient_borders/gradient_borders.dart';
+import '../constants/constants.dart';
 import '../model/league_model.dart';
 import '../model/picks_model.dart';
 import '../provider/fpl_provider.dart';
@@ -26,7 +27,7 @@ class TeamScreen extends ConsumerWidget {
     List playercode = [];
     return Scaffold(
       backgroundColor: dark,
-      appBar: _buildAppbar(),
+      appBar: _buildAppbar(context),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
@@ -74,16 +75,11 @@ class TeamScreen extends ConsumerWidget {
     );
   }
 
-  _buildAppbar() {
-    return 
-      AppBar(
-        backgroundColor: primary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20)
-        ),
-        centerTitle: true,
-        title: Text(result.playerName.toString(),style: titleStyle.copyWith(fontWeight: FontWeight.bold),),
-      );
+  _buildAppbar(context) {
+    return CustomAppbar(
+      title: Text(result.playerName.toString(),style: titleStyle.copyWith(color: dark, fontWeight: FontWeight.bold),) ,
+      prefixWidget: IconButton(onPressed: () { Navigator.pop(context); }, icon: const Icon(Icons.arrow_back_ios_new_rounded, color: dark, )),
+    );
   }
   
   _buildTopDetail(PicksModel pickdata) {
@@ -96,10 +92,10 @@ class TeamScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: primary,
+              border: const GradientBoxBorder(
+                gradient: LinearGradient(colors: [torquise, primary]),
                 width: 2
-              )
+              ),
             ),
             child: Center(
               child: Column(
@@ -117,10 +113,10 @@ class TeamScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: primary,
+              border: const GradientBoxBorder(
+                gradient: LinearGradient(colors: [torquise, primary]),
                 width: 2
-              )
+              ),
             ),
             child: Center(
               child: Column(
@@ -176,7 +172,7 @@ class TeamScreen extends ConsumerWidget {
               )
               : Container(),
             ListTile(
-              leading: CircleAvatar(backgroundColor: primary, child:Text(seconddata.picks[index].position.toString(),style: titleStyle,)),
+              leading: CircleAvatar(radius: 15, backgroundColor: torquise, child:Text(seconddata.picks[index].position.toString(),style: titleStyle.copyWith(color: dark),)),
               title: Row(
                 children: [
                   Text(firstdata.elements!.where((element) => element.id==seconddata.picks[index].element).map((e) => "${e.webName}").join(", "),style: titleStyle),

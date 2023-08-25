@@ -34,7 +34,7 @@ class ShimmerWidget extends StatelessWidget {
                       highlightColor: Colors.grey.shade600,
                       period: const Duration(milliseconds: 1000),
                       child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                        margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 15),
                         height: 25,
                         width: double.infinity,
                         decoration: BoxDecoration(
@@ -48,7 +48,7 @@ class ShimmerWidget extends StatelessWidget {
                       highlightColor: Colors.grey.shade600,
                       period: const Duration(milliseconds: 1000),
                       child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                        margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 15),
                         height: 18,
                         width: double.infinity,
                         decoration: BoxDecoration(

@@ -91,7 +91,7 @@ class HomeScreen extends ConsumerWidget {
                                   },
                                 );
                               }, 
-                              error: (error, stackTrace) => Text(error.toString()), 
+                              error: (error, stackTrace) => Text(error.toString(),style: titleStyle, ), 
                               loading: () => const ShimmerWidget()
                             );
                           },

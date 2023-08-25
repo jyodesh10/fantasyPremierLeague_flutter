@@ -15,18 +15,18 @@ const white = Colors.white;
 const black = Colors.black;
 
 
-TextStyle headingStyle = GoogleFonts.montserrat(
+TextStyle headingStyle = GoogleFonts.notoSans(
   color: white,
   fontSize: 25,
   fontWeight: FontWeight.w400,
 );
 
-TextStyle titleStyle = GoogleFonts.montserrat(
+TextStyle titleStyle = GoogleFonts.notoSans(
   color: white,
   fontSize: 18,
   fontWeight: FontWeight.w400,
 );
-TextStyle subtitleStyle = GoogleFonts.montserrat(
+TextStyle subtitleStyle = GoogleFonts.notoSans(
   color: white,
   fontSize: 14,
   fontWeight: FontWeight.w300,

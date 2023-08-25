@@ -76,7 +76,7 @@ class TeamScreen extends ConsumerWidget {
       prefixWidget: IconButton(onPressed: () { Navigator.pop(context); }, icon: const Icon(Icons.arrow_back_ios_new_rounded, color: dark, )),
     );
   }
-  
+
   _buildTopDetail(PicksModel pickdata) {
     return Container(
       margin: const EdgeInsets.all(15),
@@ -129,7 +129,7 @@ class TeamScreen extends ConsumerWidget {
       ),
     );
   }
-  
+
   _buildLabel() {
     return Row(
       children: [
@@ -147,7 +147,7 @@ class TeamScreen extends ConsumerWidget {
       ],
     );
   }
-  
+
   _buildPlayerTile(PicksModel seconddata,BootStrapModel  firstdata,List<Teams> teams,List<dynamic> playercode) {
     return ListView.builder(
       shrinkWrap: true,
@@ -208,7 +208,7 @@ class TeamScreen extends ConsumerWidget {
       }
     );
   }
-  
+
   _buildPointTab(WidgetRef ref, AsyncValue<BootStrapModel> bootstrapdata, List<Teams> teams, AsyncValue<PicksModel> picksdata, List<dynamic> playercode) {
     return RefreshIndicator(
       onRefresh: () async {
@@ -241,11 +241,11 @@ class TeamScreen extends ConsumerWidget {
                       ],
                     );
                   }, 
-                  error: (error, stackTrace) => const Text("Error Occured"), 
+                  error: (error, stackTrace) =>  Text("Error Occured",style: titleStyle,), 
                   loading: () => const ShimmerWidget()
                 );
               }, 
-              error: (error, stackTrace) => const Text("Error Occured"), 
+              error: (error, stackTrace) =>  Text("Error Occured",style: titleStyle,), 
               loading: () => const ShimmerWidget()
             )
           ],
@@ -253,7 +253,7 @@ class TeamScreen extends ConsumerWidget {
       ),
     );
   }
-  
+
   _buildDetailTab(WidgetRef ref, AsyncValue<BootStrapModel> bootstrapdata, AsyncValue<HistoryModel> historydata, AsyncValue<List<TransferModel>> transferdata ) {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -328,7 +328,7 @@ class TeamScreen extends ConsumerWidget {
                                 DataCell(Text(data.current[index]['event'].toString(), style: subtitleStyle,)),
                                 DataCell(Text(data.current[index]['points'].toString(), style: subtitleStyle)),
                                 DataCell(Text(data.current[index]['total_points'].toString(), style: subtitleStyle)),
-                                DataCell(Text(data.current[index]['rank'].toString(), style: subtitleStyle,)),
+                                DataCell(Text(data.current[index]['rank'] ==null ? "---" : data.current[index]['rank'].toString(), style: subtitleStyle,)),
                                 DataCell(Text(data.current[index]['overall_rank'].toString(), style: subtitleStyle)),
                                 DataCell(Text(addDecimal(data.current[index]['bank'].toString()), style: subtitleStyle)),
                                 DataCell(Text(addDecimal(data.current[index]['value'].toString()), style: subtitleStyle)),
@@ -388,7 +388,7 @@ class TeamScreen extends ConsumerWidget {
                   ],
                 );
               }, 
-              error: (error, stackTrace) => Text(error.toString()), 
+              error: (error, stackTrace) => Text(error.toString(),style: titleStyle,), 
               loading: () => const ShimmerWidget(),
             ),
             const SizedBox(height: 30,),
@@ -447,7 +447,7 @@ class TeamScreen extends ConsumerWidget {
                   loading: () => const ShimmerWidget(),
                 );
               }, 
-              error: (error, stackTrace) => Text(error.toString()), 
+              error: (error, stackTrace) => Text(error.toString(),style: titleStyle,), 
               loading: () => const ShimmerWidget(),
             )
           ],
@@ -455,7 +455,7 @@ class TeamScreen extends ConsumerWidget {
       ),
     );
   }
-
+  
   String addDecimal (str) {
     String originalNumberString = str;
     double originalNumber = double.parse(originalNumberString);

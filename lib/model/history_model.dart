@@ -9,7 +9,7 @@ HistoryModel historyModelFromJson(String str) => HistoryModel.fromJson(json.deco
 String historyModelToJson(HistoryModel data) => json.encode(data.toJson());
 
 class HistoryModel {
-    List<Map<String, int>> current;
+    List<Map<String, dynamic>> current;
     List<Past> past;
     List<Chip> chips;
 
@@ -20,7 +20,7 @@ class HistoryModel {
     });
 
     factory HistoryModel.fromJson(Map<String, dynamic> json) => HistoryModel(
-        current: List<Map<String, int>>.from(json["current"].map((x) => Map.from(x).map((k, v) => MapEntry<String, int>(k, v)))),
+        current: List<Map<String, dynamic>>.from(json["current"].map((x) => Map.from(x).map((k, v) => MapEntry<String, dynamic>(k, v)))),
         past: List<Past>.from(json["past"].map((x) => Past.fromJson(x))),
         chips: List<Chip>.from(json["chips"].map((x) => Chip.fromJson(x))),
     );

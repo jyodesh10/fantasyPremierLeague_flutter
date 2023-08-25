@@ -11,7 +11,7 @@ String picksModelToJson(PicksModel data) => json.encode(data.toJson());
 class PicksModel {
     dynamic activeChip;
     List<dynamic> automaticSubs;
-    Map<String, int> entryHistory;
+    Map<String, dynamic> entryHistory;
     List<Pick> picks;
 
     PicksModel({
@@ -24,7 +24,7 @@ class PicksModel {
     factory PicksModel.fromJson(Map<String, dynamic> json) => PicksModel(
         activeChip: json["active_chip"],
         automaticSubs: List<dynamic>.from(json["automatic_subs"].map((x) => x)),
-        entryHistory: Map.from(json["entry_history"]).map((k, v) => MapEntry<String, int>(k, v)),
+        entryHistory: Map.from(json["entry_history"]).map((k, v) => MapEntry<String, dynamic>(k, v)),
         picks: List<Pick>.from(json["picks"].map((x) => Pick.fromJson(x))),
     );
 

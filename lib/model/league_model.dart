@@ -72,15 +72,15 @@ class League {
         name: json["name"],
         created: DateTime.parse(json["created"]),
         closed: json["closed"],
-        maxEntries: json["max_entries"],
+        maxEntries: json["max_entries"] ?? 0,
         leagueType: json["league_type"],
         scoring: json["scoring"],
         adminEntry: json["admin_entry"],
         startEvent: json["start_event"],
         codePrivacy: json["code_privacy"],
         hasCup: json["has_cup"],
-        cupLeague: json["cup_league"],
-        rank: json["rank"],
+        cupLeague: json["cup_league"] ?? 0,
+        rank: json["rank"] ?? 0,
     );
 
     Map<String, dynamic> toJson() => {

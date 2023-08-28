@@ -123,6 +123,11 @@ class TeamScreen extends ConsumerWidget {
                         }
                       }
                     }
+                    for(int j = 0 ; j < seconddata.picks.length; j ++){
+                      if (j != 11 && j != 12 && j != 13 && j != 14) {
+                        bench.addAll(firstdata.elements!.where((element) => element.id==seconddata.picks[j].element).map((e) => e));
+                      }
+                    }
                     return Column(
                       children: [
                         seconddata.activeChip != null
@@ -147,7 +152,7 @@ class TeamScreen extends ConsumerWidget {
     );
   }
 
-    _buildTopDetail(PicksModel pickdata) {
+  _buildTopDetail(PicksModel pickdata) {
     return Container(
       margin: const EdgeInsets.all(15),
       child: Row(
@@ -219,7 +224,6 @@ class TeamScreen extends ConsumerWidget {
   }
 
   _buildPlayerTile(PicksModel seconddata,BootStrapModel  firstdata,List<Teams> teams,List<dynamic> playercode) {
-    
     return Column(
       children: [
         _buildPlayerContainer(
@@ -231,19 +235,31 @@ class TeamScreen extends ConsumerWidget {
         Wrap(
           runSpacing: 10,
           spacing: 10,
-          children: List.generate(defenders.length , (index) => _buildPlayerContainer(defenders[index].code, defenders[index].webName, defenders[index].eventPoints)),
+          children: List.generate(defenders.length , (index) => 
+            bench.contains(defenders[index])
+              ? _buildPlayerContainer(defenders[index].code, defenders[index].webName, defenders[index].eventPoints)
+              : Container(),
+          )
         ),
         //Mids
         Wrap(
           runSpacing: 10,
           spacing: 10,
-          children: List.generate(midfielders.length , (index) => _buildPlayerContainer(midfielders[index].code, midfielders[index].webName, midfielders[index].eventPoints)),
+          children: List.generate(midfielders.length , (index) => 
+            bench.contains(midfielders[index])
+              ? _buildPlayerContainer(midfielders[index].code, midfielders[index].webName, midfielders[index].eventPoints)
+              : Container()
+          ),
         ),
         //Forwards
         Wrap(
           runSpacing: 10,
           spacing: 10,
-          children: List.generate(forwards.length , (index) => _buildPlayerContainer(forwards[index].code, forwards[index].webName, forwards[index].eventPoints)),
+          children: List.generate(forwards.length , (index) => 
+            bench.contains(forwards[index])
+              ? _buildPlayerContainer(forwards[index].code, forwards[index].webName, forwards[index].eventPoints)
+              : Container()
+          ),
         ),
         const SizedBox(
           height: 20,

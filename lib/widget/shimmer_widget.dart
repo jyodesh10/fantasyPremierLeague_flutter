@@ -104,7 +104,7 @@ class ImageShimmerWidget extends StatelessWidget {
       child: SizedBox(
         height: 80,
         width: 60,
-        child: Image.network("https://resources.premierleague.com/premierleague/photos/players/110x140/p176297.png"),
+        child: Image.asset("assets/dummy.png"),
       ),
     );
   }

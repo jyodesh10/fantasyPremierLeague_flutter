@@ -42,6 +42,7 @@ dependencies:
   shimmer: ^3.0.0
   gradient_borders: ^1.0.0
   scrollable_table_view: ^1.0.1
+  marquee: ^2.2.3
 
 dev_dependencies:
   flutter_test:

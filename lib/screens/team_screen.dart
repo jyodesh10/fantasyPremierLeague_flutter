@@ -15,11 +15,17 @@ import '../provider/fpl_provider.dart';
 import '../widget/shimmer_widget.dart';
 
 class TeamScreen extends ConsumerWidget {
-  const TeamScreen( {super.key,required this.teamId,required this.gw,required this.result,});
+  TeamScreen( {super.key,required this.teamId,required this.gw,required this.result,});
 
   final int teamId;
   final int gw;
   final Result result;
+  List<Elements> allplayers = [];
+  List<Elements> goalkeepers = [];
+  List<Elements> defenders = [];
+  List<Elements> midfielders = [];
+  List<Elements> forwards = [];
+  List<Elements> bench = [];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -77,7 +83,71 @@ class TeamScreen extends ConsumerWidget {
     );
   }
 
-  _buildTopDetail(PicksModel pickdata) {
+  _buildPointTab(WidgetRef ref, AsyncValue<BootStrapModel> bootstrapdata, List<Teams> teams, AsyncValue<PicksModel> picksdata, List<dynamic> playercode) {
+    return RefreshIndicator(
+      onRefresh: () async {
+        await Future.delayed(const Duration(seconds: 1));
+        return ref.refresh(teamPicksDataProvider(Tuple2(teamId, gw)));
+      },
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          children: [
+            bootstrapdata.when(
+              data: (firstdata) {
+                for(int i = 0 ; i < firstdata.teams!.length; i ++){
+                  teams.add(firstdata.teams![i]);
+                }
+                return picksdata.when(
+                  skipLoadingOnRefresh: false,
+                  data: (seconddata) {
+                    goalkeepers.clear();
+                    defenders.clear();
+                    midfielders.clear();
+                    forwards.clear();
+                    bench.clear();
+                    for(int i = 0 ; i < firstdata.elements!.length ; i ++){
+                      for(int j = 0 ; j < seconddata.picks.length; j ++){
+                        playercode.add(firstdata.elements!.where((element) => element.id==seconddata.picks[j].element).map((e) => "${e.teamCode}").join(", "));
+                        if(firstdata.elements![i].elementType==1 && firstdata.elements![i].id == seconddata.picks[j].element){
+                          goalkeepers.add(firstdata.elements![i]);
+                        }
+                        if(firstdata.elements![i].elementType==2 && firstdata.elements![i].id == seconddata.picks[j].element){
+                          defenders.add(firstdata.elements![i]);
+                        }
+                        if(firstdata.elements![i].elementType==3 && firstdata.elements![i].id == seconddata.picks[j].element){
+                          midfielders.add(firstdata.elements![i]);
+                        }
+                        if(firstdata.elements![i].elementType==4 && firstdata.elements![i].id == seconddata.picks[j].element){
+                          forwards.add(firstdata.elements![i]);
+                        }
+                      }
+                    }
+                    return Column(
+                      children: [
+                        seconddata.activeChip != null
+                          ? Text("${seconddata.activeChip} Activated",style: titleStyle, )
+                          : Container(),
+                        _buildTopDetail(seconddata),
+                        _buildLabel(),
+                        _buildPlayerTile(seconddata, firstdata, teams, playercode)
+                      ],
+                    );
+                  }, 
+                  error: (error, stackTrace) =>  Text("Error Occured",style: titleStyle,), 
+                  loading: () => const ShimmerWidget()
+                );
+              }, 
+              error: (error, stackTrace) =>  Text("Error Occured",style: titleStyle,), 
+              loading: () => const ShimmerWidget()
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+    _buildTopDetail(PicksModel pickdata) {
     return Container(
       margin: const EdgeInsets.all(15),
       child: Row(
@@ -149,109 +219,68 @@ class TeamScreen extends ConsumerWidget {
   }
 
   _buildPlayerTile(PicksModel seconddata,BootStrapModel  firstdata,List<Teams> teams,List<dynamic> playercode) {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: seconddata.picks.length,
-      itemBuilder: (context, index) {
-        return Column(
+    
+    return Column(
+      children: [
+        _buildPlayerContainer(
+          goalkeepers.firstWhere((element) => element.id == seconddata.picks[0].element ).code, 
+          goalkeepers.firstWhere((element) => element.id == seconddata.picks[0].element ).webName, 
+          goalkeepers.firstWhere((element) => element.id == seconddata.picks[0].element ).eventPoints
+        ),
+        //defenders
+        Wrap(
+          runSpacing: 10,
+          spacing: 10,
+          children: List.generate(defenders.length , (index) => _buildPlayerContainer(defenders[index].code, defenders[index].webName, defenders[index].eventPoints)),
+        ),
+        //Mids
+        Wrap(
+          runSpacing: 10,
+          spacing: 10,
+          children: List.generate(midfielders.length , (index) => _buildPlayerContainer(midfielders[index].code, midfielders[index].webName, midfielders[index].eventPoints)),
+        ),
+        //Forwards
+        Wrap(
+          runSpacing: 10,
+          spacing: 10,
+          children: List.generate(forwards.length , (index) => _buildPlayerContainer(forwards[index].code, forwards[index].webName, forwards[index].eventPoints)),
+        ),
+        const SizedBox(
+          height: 20,
+        ),
+        //subs
+        Row(
+          // mainAxisSize: MainAxisSize.min,
           children: [
-            index == 11
-              ? Row(
-                // mainAxisSize: MainAxisSize.min,
-                children: [
-                  Expanded(flex: 1, child: Center(child: Container(height: 2, margin: const EdgeInsets.only(left: 20), color: white,))),
-                  Expanded(flex: 2, child: Center(child: Text("Substitutes", style: subtitleStyle, ))),
-                  Expanded(flex: 5, child: Center(child: Container(height: 2, margin: const EdgeInsets.only(right: 20), color: white,)))
-                ],
-              )
-              : Container(),
-            ListTile(
-              leading: CircleAvatar(radius: 15, backgroundColor: torquise, child:Text(seconddata.picks[index].position.toString(),style: titleStyle.copyWith(color: dark),)),
-              title: Row(
-                children: [
-                  Text(firstdata.elements!.where((element) => element.id==seconddata.picks[index].element).map((e) => "${e.webName}").join(", "),style: titleStyle),
-                  seconddata.picks[index].isCaptain
-                    ? Padding(
-                      padding: const EdgeInsets.only(left: 20),
-                      child: CircleAvatar(
-                        radius: 15,
-                        backgroundColor: white,
-                        child: Text("C", style: titleStyle.copyWith(color: black, fontWeight: FontWeight.bold),),
-                      ),
-                    )
-                    : seconddata.picks[index].isViceCaptain
-                      ? Padding(
-                        padding: const EdgeInsets.only(left: 20),
-                        child: CircleAvatar(
-                          radius: 15,
-                          backgroundColor: white,
-                          child: Text("V", style: titleStyle.copyWith(color: black, fontWeight: FontWeight.bold),),
-                        ),
-                      )
-                      : Container()
-                ],
-              ),
-              subtitle: Text(teams.firstWhere((element) => element.code.toString() == playercode[index]).shortName.toString(),style: subtitleStyle, ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(firstdata.elements!.where((element) => element.id==seconddata.picks[index].element).map((e) => "${ seconddata.picks[index].isCaptain? e.eventPoints!*2 :e.eventPoints}").join(", "),style: titleStyle, ),
-                  const SizedBox(
-                    width: 25,
-                  )
-                ],
-              ),
-            ),
-          ],
-        ); 
-      }
-    );
-  }
-
-  _buildPointTab(WidgetRef ref, AsyncValue<BootStrapModel> bootstrapdata, List<Teams> teams, AsyncValue<PicksModel> picksdata, List<dynamic> playercode) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        await Future.delayed(const Duration(seconds: 1));
-        return ref.refresh(teamPicksDataProvider(Tuple2(teamId, gw)));
-      },
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          children: [
-            bootstrapdata.when(
-              data: (firstdata) {
-                for(int i = 0 ; i < firstdata.teams!.length; i ++){
-                  teams.add(firstdata.teams![i]);
-                }
-                return picksdata.when(
-                  skipLoadingOnRefresh: false,
-                  data: (seconddata) {
-                    for(int i = 0 ; i < seconddata.picks.length; i ++){
-                      playercode.add(firstdata.elements!.where((element) => element.id==seconddata.picks[i].element).map((e) => "${e.teamCode}").join(", "));
-                    }
-                    return Column(
-                      children: [
-                        seconddata.activeChip != null
-                          ? Text("${seconddata.activeChip} Activated",style: titleStyle, )
-                          : Container(),
-                        _buildTopDetail(seconddata),
-                        _buildLabel(),
-                        _buildPlayerTile(seconddata, firstdata, teams, playercode)
-                      ],
-                    );
-                  }, 
-                  error: (error, stackTrace) =>  Text("Error Occured",style: titleStyle,), 
-                  loading: () => const ShimmerWidget()
-                );
-              }, 
-              error: (error, stackTrace) =>  Text("Error Occured",style: titleStyle,), 
-              loading: () => const ShimmerWidget()
-            )
+            Expanded(flex: 1, child: Center(child: Container(height: 2, margin: const EdgeInsets.only(left: 20), color: white,))),
+            Expanded(flex: 2, child: Center(child: Text("Bench", style: subtitleStyle, ))),
+            Expanded(flex: 5, child: Center(child: Container(height: 2, margin: const EdgeInsets.only(right: 20), color: white,)))
           ],
         ),
-      ),
-    );
+        Row(
+          children: [
+            const SizedBox(width: 10,),
+            _buildPlayerContainer(
+              goalkeepers.firstWhere((element) => element.id == seconddata.picks[11].element).code, 
+              goalkeepers.firstWhere((element) => element.id == seconddata.picks[11].element).webName, 
+              goalkeepers.firstWhere((element) => element.id == seconddata.picks[11].element).eventPoints
+            ),
+            const Spacer(),
+            Wrap(
+              spacing: 10,
+              children: List.generate(3, (index) => 
+                _buildPlayerContainer(
+                  firstdata.elements!.firstWhere((element) => element.id == seconddata.picks[index==0? 12 : index==1? 13 : 14].element).code, 
+                  firstdata.elements!.firstWhere((element) => element.id == seconddata.picks[index==0? 12 : index==1? 13 : 14].element).webName, 
+                  firstdata.elements!.firstWhere((element) => element.id == seconddata.picks[index==0? 12 : index==1? 13 : 14].element).eventPoints,
+                )
+              ),
+            ),
+            const SizedBox(width: 10,),
+          ],
+        )
+      ],
+    ); 
   }
 
   _buildDetailTab(WidgetRef ref, AsyncValue<BootStrapModel> bootstrapdata, AsyncValue<HistoryModel> historydata, AsyncValue<List<TransferModel>> transferdata ) {
@@ -455,6 +484,7 @@ class TeamScreen extends ConsumerWidget {
       ),
     );
   }
+
   
   String addDecimal (str) {
     String originalNumberString = str;
@@ -463,5 +493,35 @@ class TeamScreen extends ConsumerWidget {
     double formattedNumber = originalNumber / 10;
 
     return formattedNumber.toStringAsFixed(1);
+  }
+  
+  _buildPlayerContainer(imgCode,name,club) {
+    return Column(
+      children: [
+        Image.network(
+          "https://resources.premierleague.com/premierleague/photos/players/110x140/p$imgCode.png",
+          loadingBuilder: (context, child, loadingProgress) => loadingProgress==null ? child : const ImageShimmerWidget(),
+          errorBuilder: (context, error, stackTrace) => Image.asset("assets/logo.png",height: 80,width: 60,color: Colors.grey, colorBlendMode: BlendMode.darken,),
+          height: 80,
+          width: 60,
+        ),
+        Container(
+          width: 70,
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.only(topLeft: Radius.circular(8),topRight: Radius.circular(8)),
+            color: Colors.grey.shade500,
+          ),
+          child:Center(child: Text("$name",style: subtitleStyle.copyWith(fontSize: 12.5, fontWeight: FontWeight.bold ),maxLines: 1, overflow: TextOverflow.ellipsis, )),
+        ),
+        Container(
+          width: 70,
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(8),bottomRight: Radius.circular(8)),
+            color: Colors.grey.shade600,
+          ),          
+          child:Center(child: Text("$club",style: subtitleStyle,)),
+        ),
+      ],
+    );
   }
 }

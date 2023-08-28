@@ -91,3 +91,21 @@ class TableShimmerWidget extends StatelessWidget {
     );
   }
 }
+
+class ImageShimmerWidget extends StatelessWidget {
+  const ImageShimmerWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade800,
+      highlightColor: Colors.grey.shade500,
+      period: const Duration(milliseconds: 1000),
+      child: SizedBox(
+        height: 80,
+        width: 60,
+        child: Image.network("https://resources.premierleague.com/premierleague/photos/players/110x140/p176297.png"),
+      ),
+    );
+  }
+}

@@ -43,6 +43,8 @@ dependencies:
   gradient_borders: ^1.0.0
   scrollable_table_view: ^1.0.1
   marquee: ^2.2.3
+  intl: ^0.18.1
+  timezone: ^0.9.2
 
 dev_dependencies:
   flutter_test:

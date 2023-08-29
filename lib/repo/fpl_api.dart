@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import '../constants/constants.dart';
 import '../model/bootstrap_model.dart';
+import '../model/fixture_model.dart';
 import '../model/history_model.dart';
 import '../model/league_model.dart';
 import '../model/picks_model.dart';
@@ -75,6 +76,17 @@ class FplApi{
       return PlayerModel.fromJson(data);
     } else {
       throw Exception('Failed to fetch player');
+    }
+  }
+
+  Future<List<FixtureModel>> fetchFixtures() async {
+    final response = await http.get(Uri.parse('$base/fixtures/'));
+
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((e) => FixtureModel.fromJson(e)).toList();
+    } else {
+      throw Exception('Failed to fetch fixture');
     }
   }
 

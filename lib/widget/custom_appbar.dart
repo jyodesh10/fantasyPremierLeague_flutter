@@ -28,7 +28,7 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget{
       child: Row(
 
         children: [
-          prefixWidget ?? const SizedBox(width: 20,),
+          prefixWidget ?? const SizedBox(width: 20,height: 48, ),
           title,
           const Spacer(),
           sufixWidget ?? const SizedBox(),

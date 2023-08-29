@@ -109,3 +109,84 @@ class ImageShimmerWidget extends StatelessWidget {
     );
   }
 }
+
+class PointTabShimmerWidget extends StatelessWidget {
+  const PointTabShimmerWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _buildPlayerContainer(),
+        Wrap(
+          alignment: WrapAlignment.center,
+          runAlignment: WrapAlignment.center,
+          children: List.generate(4, (index) => _buildPlayerContainer()),
+        ),
+        Wrap(
+          alignment: WrapAlignment.center,
+          runAlignment: WrapAlignment.center,
+          children: List.generate(4, (index) => _buildPlayerContainer()),
+        ),
+        Wrap(
+          alignment: WrapAlignment.center,
+          runAlignment: WrapAlignment.center,
+          children: List.generate(2, (index) => _buildPlayerContainer()),
+        ),
+        const SizedBox(
+          height: 20,
+        ),
+        Row(
+          children: [
+            const SizedBox(width: 10,),
+            _buildPlayerContainer(),
+            const Spacer(),
+            Wrap(
+              children: List.generate(3, (index) => 
+                _buildPlayerContainer()
+              ),
+            ),
+            const SizedBox(width: 10,),
+          ],
+        )
+      ],
+    );
+  }
+
+  _buildPlayerContainer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade800,
+      highlightColor: Colors.grey.shade500,
+      period: const Duration(milliseconds: 1000),
+      child: Container(
+        margin: const EdgeInsets.all(4),
+        child: Column(
+          children: [
+            Image.asset(
+              "assets/dummy.png",
+              errorBuilder: (context, error, stackTrace) => Image.asset("assets/logo.png",height: 80,width: 60,color: Colors.grey, colorBlendMode: BlendMode.darken,),
+              height: 80,
+              width: 60,
+            ),
+            Container(
+              width: 70,
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(8),topRight: Radius.circular(8)),
+                color: Colors.grey.shade500,
+              ),
+              child:Center(child: Text("Player",style: subtitleStyle.copyWith(fontSize: 12.5, fontWeight: FontWeight.bold ),maxLines: 1, overflow: TextOverflow.ellipsis, )),
+            ),
+            Container(
+              width: 70,
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(8),bottomRight: Radius.circular(8)),
+                color: Colors.grey.shade600,
+              ),          
+              child:Center(child: Text("0",style: subtitleStyle,)),
+            ),
+          ],
+        ),
+      )
+    );
+  }
+}

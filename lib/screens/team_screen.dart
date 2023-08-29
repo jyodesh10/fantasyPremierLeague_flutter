@@ -133,18 +133,16 @@ class TeamScreen extends ConsumerWidget {
                         seconddata.activeChip != null
                           ? Text("${seconddata.activeChip} Activated",style: titleStyle, )
                           : Container(),
-                        _buildTopDetail(seconddata),
-                        _buildLabel(),
                         _buildPlayerTile(seconddata, firstdata, teams, playercode)
                       ],
                     );
                   }, 
                   error: (error, stackTrace) =>  Text("Error Occured",style: titleStyle,), 
-                  loading: () => const ShimmerWidget()
+                  loading: () => const PointTabShimmerWidget()
                 );
               }, 
               error: (error, stackTrace) =>  Text("Error Occured",style: titleStyle,), 
-              loading: () => const ShimmerWidget()
+              loading: () => const PointTabShimmerWidget()
             )
           ],
         ),
@@ -156,47 +154,58 @@ class TeamScreen extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.all(15),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        // mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              border: const GradientBoxBorder(
-                gradient: LinearGradient(colors: [torquise, primary]),
-                width: 2
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              margin: const EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                border: const GradientBoxBorder(
+                  gradient: LinearGradient(colors: [torquise, primary]),
+                  width: 2
+                ),
               ),
-            ),
-            child: Center(
-              child: Column(
-                children: [
-                  Text(pickdata.entryHistory['event_transfers']!.toInt() > 1 ? "${result.eventTotal-pickdata.entryHistory['event_transfers_cost']!.toInt()}" : result.eventTotal.toString(),style: titleStyle.copyWith(fontWeight: FontWeight.bold),),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Text("Points",style: subtitleStyle.copyWith(fontWeight: FontWeight.bold),),
-                ],
+              child: Center(
+                child: Column(
+                  children: [
+                    Text(pickdata.entryHistory['event_transfers']!.toInt() > 1 ? "${result.eventTotal-pickdata.entryHistory['event_transfers_cost']!.toInt()}" : result.eventTotal.toString(),style: titleStyle.copyWith(fontWeight: FontWeight.bold),),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Text("Points",style: subtitleStyle.copyWith(fontWeight: FontWeight.bold),),
+                  ],
+                ),
               ),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              border: const GradientBoxBorder(
-                gradient: LinearGradient(colors: [torquise, primary]),
-                width: 2
+          _buildPlayerContainer(
+            goalkeepers.firstWhere((element) => element.id == pickdata.picks[0].element ).code, 
+            goalkeepers.firstWhere((element) => element.id == pickdata.picks[0].element ).webName, 
+            goalkeepers.firstWhere((element) => element.id == pickdata.picks[0].element ).eventPoints
+          ),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              margin: const EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                border: const GradientBoxBorder(
+                  gradient: LinearGradient(colors: [torquise, primary]),
+                  width: 2
+                ),
               ),
-            ),
-            child: Center(
-              child: Column(
-                children: [
-                  Text("${pickdata.entryHistory['event_transfers']}${pickdata.entryHistory['event_transfers']!.toInt() > 1 ? "(-${pickdata.entryHistory['event_transfers_cost']} pts)" : "" }",style: titleStyle.copyWith(fontWeight: FontWeight.bold),),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Text("Transfers",style: subtitleStyle.copyWith(fontWeight: FontWeight.bold),),
-                ],
+              child: Center(
+                child: Column(
+                  children: [
+                    Text("${pickdata.entryHistory['event_transfers']}${pickdata.entryHistory['event_transfers']!.toInt() > 1 ? "(-${pickdata.entryHistory['event_transfers_cost']} pts)" : "" }",style: titleStyle.copyWith(fontWeight: FontWeight.bold),),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Text("Transfers",style: subtitleStyle.copyWith(fontWeight: FontWeight.bold),),
+                  ],
+                ),
               ),
             ),
           ),
@@ -205,60 +214,48 @@ class TeamScreen extends ConsumerWidget {
     );
   }
 
-  _buildLabel() {
-    return Row(
-      children: [
-        Expanded(flex: 4, child: Center(child: Container(height: 2, margin: const EdgeInsets.only(left: 20), color: white,))),
-        Expanded(
-          flex: 2,
-          child: Center(child: Text("Players",style: subtitleStyle,))
-        ),
-        Expanded(flex: 4, child: Center(child: Container(height: 2,  color: white,))),
-        Expanded(
-          flex: 2,
-          child: Center(child: Text("Points",style: subtitleStyle,))
-        ),
-        Expanded(flex: 1, child: Center(child: Container(height: 2, margin: const EdgeInsets.only(right: 20), color: white,))),
-      ],
-    );
-  }
 
   _buildPlayerTile(PicksModel seconddata,BootStrapModel  firstdata,List<Teams> teams,List<dynamic> playercode) {
     return Column(
       children: [
-        _buildPlayerContainer(
-          goalkeepers.firstWhere((element) => element.id == seconddata.picks[0].element ).code, 
-          goalkeepers.firstWhere((element) => element.id == seconddata.picks[0].element ).webName, 
-          goalkeepers.firstWhere((element) => element.id == seconddata.picks[0].element ).eventPoints
-        ),
+        _buildTopDetail(seconddata),
         //defenders
         Wrap(
-          runSpacing: 10,
-          spacing: 10,
+          // runSpacing: 10,
+          // spacing: 10,
+          alignment: WrapAlignment.center,
+          runAlignment: WrapAlignment.center,
           children: List.generate(defenders.length , (index) => 
-            bench.contains(defenders[index])
-              ? _buildPlayerContainer(defenders[index].code, defenders[index].webName, defenders[index].eventPoints)
-              : Container(),
+            Visibility(
+              visible: bench.contains(defenders[index]),
+              child: _buildPlayerContainer(defenders[index].code, defenders[index].webName, defenders[index].eventPoints)
+            )
           )
         ),
         //Mids
         Wrap(
-          runSpacing: 10,
-          spacing: 10,
-          children: List.generate(midfielders.length , (index) => 
-            bench.contains(midfielders[index])
-              ? _buildPlayerContainer(midfielders[index].code, midfielders[index].webName, midfielders[index].eventPoints)
-              : Container()
+          // runSpacing: 10,
+          // spacing: 10,
+          alignment: WrapAlignment.center,
+          runAlignment: WrapAlignment.center,
+          children: List.generate(midfielders.length , (index) =>
+            Visibility(
+              visible: bench.contains(midfielders[index]),
+              child:_buildPlayerContainer(midfielders[index].code, midfielders[index].webName, midfielders[index].eventPoints)
+            )
           ),
         ),
         //Forwards
         Wrap(
-          runSpacing: 10,
-          spacing: 10,
+          // runSpacing: 10,
+          // spacing: 10,
+          alignment: WrapAlignment.center,
+          runAlignment: WrapAlignment.center,
           children: List.generate(forwards.length , (index) => 
-            bench.contains(forwards[index])
-              ? _buildPlayerContainer(forwards[index].code, forwards[index].webName, forwards[index].eventPoints)
-              : Container()
+            Visibility(
+              visible: bench.contains(forwards[index]),
+              child: _buildPlayerContainer(forwards[index].code, forwards[index].webName, forwards[index].eventPoints)
+            )
           ),
         ),
         const SizedBox(
@@ -283,7 +280,6 @@ class TeamScreen extends ConsumerWidget {
             ),
             const Spacer(),
             Wrap(
-              spacing: 10,
               children: List.generate(3, (index) => 
                 _buildPlayerContainer(
                   firstdata.elements!.firstWhere((element) => element.id == seconddata.picks[index==0? 12 : index==1? 13 : 14].element).code, 
@@ -512,32 +508,35 @@ class TeamScreen extends ConsumerWidget {
   }
   
   _buildPlayerContainer(imgCode,name,club) {
-    return Column(
-      children: [
-        Image.network(
-          "https://resources.premierleague.com/premierleague/photos/players/110x140/p$imgCode.png",
-          loadingBuilder: (context, child, loadingProgress) => loadingProgress==null ? child : const ImageShimmerWidget(),
-          errorBuilder: (context, error, stackTrace) => Image.asset("assets/logo.png",height: 80,width: 60,color: Colors.grey, colorBlendMode: BlendMode.darken,),
-          height: 80,
-          width: 60,
-        ),
-        Container(
-          width: 70,
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.only(topLeft: Radius.circular(8),topRight: Radius.circular(8)),
-            color: Colors.grey.shade500,
+    return Container(
+      margin: const EdgeInsets.all(4),
+      child: Column(
+        children: [
+          Image.network(
+            "https://resources.premierleague.com/premierleague/photos/players/110x140/p$imgCode.png",
+            loadingBuilder: (context, child, loadingProgress) => loadingProgress==null ? child : const ImageShimmerWidget(),
+            errorBuilder: (context, error, stackTrace) => Image.asset("assets/logo.png",height: 80,width: 60,color: Colors.grey, colorBlendMode: BlendMode.darken,),
+            height: 80,
+            width: 60,
           ),
-          child:Center(child: Text("$name",style: subtitleStyle.copyWith(fontSize: 12.5, fontWeight: FontWeight.bold ),maxLines: 1, overflow: TextOverflow.ellipsis, )),
-        ),
-        Container(
-          width: 70,
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(8),bottomRight: Radius.circular(8)),
-            color: Colors.grey.shade600,
-          ),          
-          child:Center(child: Text("$club",style: subtitleStyle,)),
-        ),
-      ],
+          Container(
+            width: 70,
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(8),topRight: Radius.circular(8)),
+              color: Colors.grey.shade500,
+            ),
+            child:Center(child: Text("$name",style: subtitleStyle.copyWith(fontSize: 12.5, fontWeight: FontWeight.bold ),maxLines: 1, overflow: TextOverflow.ellipsis, )),
+          ),
+          Container(
+            width: 70,
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(8),bottomRight: Radius.circular(8)),
+              color: Colors.grey.shade600,
+            ),          
+            child:Center(child: Text("$club",style: subtitleStyle,)),
+          ),
+        ],
+      ),
     );
   }
 }

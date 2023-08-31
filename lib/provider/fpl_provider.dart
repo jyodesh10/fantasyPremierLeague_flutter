@@ -29,3 +29,14 @@ class SortNotifier extends StateNotifier<String> {
   void isGwpoints() => state = 'gwpoints';
   void isTotalpoints() => state = 'totalpoints';
 }
+
+final currentGWProvider = StateNotifierProvider<CurrentGWNotifier,int>((ref) {
+  return CurrentGWNotifier();
+});
+
+class CurrentGWNotifier extends StateNotifier<int> {
+  CurrentGWNotifier(): super(0);
+
+  void getcurrentGw(int gw) => state = gw;
+  
+}

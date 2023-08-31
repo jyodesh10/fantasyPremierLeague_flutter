@@ -18,7 +18,7 @@ class LandingScreen extends ConsumerWidget {
     },
     {
       "name" : "Fixture",
-      "route" : FixturesScreen(),
+      "route" : const FixturesScreen(),
       "icon" : Icons.list_alt
     },
   ];

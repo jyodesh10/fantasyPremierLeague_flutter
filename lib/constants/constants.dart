@@ -13,6 +13,8 @@ const lightgreen = Color(0xff00ff85);
 const dark = Color(0xff38003c); 
 const white = Colors.white;
 const black = Colors.black;
+const baseColor = Color(0xff3a3a3a);
+const highlightColor = Color(0xff4a4a4a);
 
 
 TextStyle headingStyle = GoogleFonts.notoSans(

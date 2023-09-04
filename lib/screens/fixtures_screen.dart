@@ -20,6 +20,7 @@ class _FixturesScreenState extends ConsumerState<FixturesScreen> {
 
 
   int currentGw = 0;
+  int nowGw = 0;
   List<List<FixtureModel>> gwFixtures = [];
   List<DateTime> dates= [];
   final CarouselController _carouselController = CarouselController();
@@ -31,7 +32,18 @@ class _FixturesScreenState extends ConsumerState<FixturesScreen> {
     final currentGwData = ref.watch(currentGWProvider);
     return Scaffold(
       backgroundColor: dark,
-      appBar: CustomAppbar(title: Text("Fixtures",style: titleStyle.copyWith(color: dark, fontWeight: FontWeight.bold), ),),
+      appBar: CustomAppbar(
+        title: Text("Fixtures",style: titleStyle.copyWith(color: dark, fontWeight: FontWeight.bold),),
+        sufixWidget: Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: TextButton(
+            onPressed: (){
+              ref.read(currentGWProvider.notifier).getcurrentGw(nowGw-1);
+              _carouselController.animateToPage(nowGw-1);
+            }, 
+            child: Text("Current GW", style: subtitleStyle.copyWith(color: dark), )),
+        ),
+      ),
       floatingActionButton: FloatingActionButton(onPressed: () { return ref.refresh(fixtureDataProvider);},child: const Icon(Icons.refresh_outlined), ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -45,6 +57,7 @@ class _FixturesScreenState extends ConsumerState<FixturesScreen> {
               data: (firstdata) {
                 // ref.read(currentGWProvider.notifier).getcurrentGw(firstdata.events!.where((element) => element.isNext == true).map((e) => e.id).first!.toInt());
                 currentGw = currentGwData != 0 ? currentGwData : firstdata.events!.where((element) => element.isNext == true).map((e) => e.id).first!.toInt();
+                nowGw = firstdata.events!.where((element) => element.isNext == true).map((e) => e.id).first!.toInt();
                 return fixtureData.when(
                   skipLoadingOnRefresh: false,
                   data: (seconddata) {
@@ -96,13 +109,13 @@ class _FixturesScreenState extends ConsumerState<FixturesScreen> {
                   error: (error, stackTrace) {
                     return  Text(error.toString(),style: titleStyle);
                   }, 
-                  loading: () => const ShimmerWidget()
+                  loading: () => const FixtureShimmerWidget()
                 );
               },
               error: (error, stackTrace) {
                 return  Text(error.toString(),style: titleStyle);
               }, 
-              loading: () => const ShimmerWidget()
+              loading: () => const FixtureShimmerWidget()
             ),
           ),
         ) 

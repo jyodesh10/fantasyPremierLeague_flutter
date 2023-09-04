@@ -1,16 +1,6 @@
 # fantasypl
 
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+A simple app to display private league data using fpl api https://fantasy.premierleague.com/api
+## Screenshots
+![My Image](screenshots/picks.png) |  ![My Image](screenshots/details.png)
+![My Image](screenshots/fixtures.png) |  ![My Image](screenshots/stats.png)

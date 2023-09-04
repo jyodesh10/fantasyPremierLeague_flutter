@@ -17,24 +17,25 @@ class ShimmerWidget extends StatelessWidget {
               Expanded(
                 flex: 1,
                 child: Shimmer.fromColors(
-                  baseColor: Colors.grey.shade900,
-                  highlightColor: Colors.grey.shade800,
+                  baseColor: baseColor,
+                  highlightColor: highlightColor,
                   period: const Duration(milliseconds: 1000),
                   child: const CircleAvatar(
+                    radius: 15,
                     backgroundColor: primary,
                   )
                 ),
               ),
               Expanded(
-                flex: 4,
+                flex: 6,
                 child: Column(
                   children: [
                     Shimmer.fromColors(
-                      baseColor: Colors.grey.shade800,
-                      highlightColor: Colors.grey.shade600,
+                      baseColor: baseColor,
+                      highlightColor: highlightColor,
                       period: const Duration(milliseconds: 1000),
                       child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 15),
+                        margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
                         height: 25,
                         width: double.infinity,
                         decoration: BoxDecoration(
@@ -44,11 +45,11 @@ class ShimmerWidget extends StatelessWidget {
                       ),
                     ),
                     Shimmer.fromColors(
-                      baseColor: Colors.grey.shade800,
-                      highlightColor: Colors.grey.shade600,
+                      baseColor: baseColor,
+                      highlightColor: highlightColor,
                       period: const Duration(milliseconds: 1000),
                       child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 15),
+                        margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
                         height: 18,
                         width: double.infinity,
                         decoration: BoxDecoration(
@@ -78,8 +79,8 @@ class TableShimmerWidget extends StatelessWidget {
         itemCount: 5,
         itemBuilder: (context, index) {
           return Shimmer.fromColors(
-            baseColor: Colors.grey.shade800,
-            highlightColor: Colors.grey.shade500,
+            baseColor: baseColor,
+            highlightColor: highlightColor,
             period: const Duration(milliseconds: 1000),
             child: Container(
               height: 100,
@@ -98,8 +99,8 @@ class ImageShimmerWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: Colors.grey.shade800,
-      highlightColor: Colors.grey.shade500,
+      baseColor: baseColor,
+      highlightColor: highlightColor,
       period: const Duration(milliseconds: 1000),
       child: SizedBox(
         height: 80,
@@ -155,8 +156,8 @@ class PointTabShimmerWidget extends StatelessWidget {
 
   _buildPlayerContainer() {
     return Shimmer.fromColors(
-      baseColor: Colors.grey.shade800,
-      highlightColor: Colors.grey.shade500,
+      baseColor: baseColor,
+      highlightColor: highlightColor,
       period: const Duration(milliseconds: 1000),
       child: Container(
         margin: const EdgeInsets.all(4),
@@ -187,6 +188,37 @@ class PointTabShimmerWidget extends StatelessWidget {
           ],
         ),
       )
+    );
+  }
+}
+
+class FixtureShimmerWidget extends StatelessWidget {
+  const FixtureShimmerWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: ListView.builder(
+        shrinkWrap: true,
+        physics: const BouncingScrollPhysics(),
+        itemCount: 10,
+        itemBuilder: (context, index) {
+          return Shimmer.fromColors(
+            baseColor: baseColor,
+            highlightColor: highlightColor,
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 5,horizontal: 10),
+              padding: const EdgeInsets.symmetric(vertical: 8,horizontal: 10),
+              height: 50,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: white.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

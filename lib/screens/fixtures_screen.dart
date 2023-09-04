@@ -22,6 +22,7 @@ class _FixturesScreenState extends ConsumerState<FixturesScreen> {
   int currentGw = 0;
   List<List<FixtureModel>> gwFixtures = [];
   List<DateTime> dates= [];
+  final CarouselController _carouselController = CarouselController();
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +32,7 @@ class _FixturesScreenState extends ConsumerState<FixturesScreen> {
     return Scaffold(
       backgroundColor: dark,
       appBar: CustomAppbar(title: Text("Fixtures",style: titleStyle.copyWith(color: dark, fontWeight: FontWeight.bold), ),),
+      floatingActionButton: FloatingActionButton(onPressed: () { return ref.refresh(fixtureDataProvider);},child: const Icon(Icons.refresh_outlined), ),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
@@ -58,14 +60,35 @@ class _FixturesScreenState extends ConsumerState<FixturesScreen> {
                         const SizedBox(
                           height: 10,
                         ),
-                        _buildCarousel(),
+                        _buildCarousel(currentGwData),
                         // Text("Gameweek $currentGw",style: titleStyle, ),
                         const SizedBox(
                           height: 10,
                         ),
-                        ...List.generate(
-                          seconddata.where((element) => element.event == currentGw).length,
-                          (index) => _buildTeamContainer(firstdata, seconddata.where((element) => element.event == currentGw).toList(), index)
+                        GestureDetector(
+                          onHorizontalDragEnd: (DragEndDetails details) {
+                            if (details.primaryVelocity! > 0) {
+                              if(currentGw != 1 ){
+                                ref.read(currentGWProvider.notifier).getcurrentGw(currentGw - 1);
+                                _carouselController.previousPage(
+                                  curve: Curves.linearToEaseOut
+                                );
+                              }
+                            } else if (details.primaryVelocity! < 0) {
+                              if(currentGw != 38){
+                                ref.read(currentGWProvider.notifier).getcurrentGw(currentGw + 1);
+                                _carouselController.nextPage(
+                                  curve: Curves.linearToEaseOut
+                                );
+                              }
+                            }
+                          },
+                          child: Column(
+                            children: List.generate(
+                              seconddata.where((element) => element.event == currentGw).length,
+                              (index) => _buildTeamContainer(firstdata, seconddata.where((element) => element.event == currentGw).toList(), index)
+                            )
+                          ),
                         )
                       ],
                     );
@@ -87,7 +110,7 @@ class _FixturesScreenState extends ConsumerState<FixturesScreen> {
     );
   }
 
-  _buildCarousel() {
+  _buildCarousel(currentGwData) {
     return Container(    
       height: 50,
       width: double.infinity,
@@ -116,13 +139,14 @@ class _FixturesScreenState extends ConsumerState<FixturesScreen> {
             child: Text("Gameweek ${index + 1}",style: titleStyle,)
           ),
         ), 
+        carouselController: _carouselController,
         options: CarouselOptions(
           reverse: false,
           height: 50,
           viewportFraction: 0.4,
           enableInfiniteScroll: false,
           initialPage: currentGw - 1,
-          enlargeCenterPage: true,
+          enlargeCenterPage: true, 
           onPageChanged: (index, reason) {
             ref.read(currentGWProvider.notifier).getcurrentGw(index + 1);
             // return ref.refresh(fixtureDataProvider);
@@ -146,54 +170,59 @@ class _FixturesScreenState extends ConsumerState<FixturesScreen> {
           DateFormat.MMMMEEEEd().format(currentDate),
           style: titleStyle,
         ),
-        Container(
-          margin: const EdgeInsets.symmetric(vertical: 5,horizontal: 10),
-          padding: const EdgeInsets.symmetric(vertical: 8,horizontal: 10),
-          decoration: BoxDecoration(
-            color: white.withOpacity(0.4),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                flex: 5,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(firstdata.teams!.firstWhere((element) => element.id == seconddata[index].teamH).name.toString(), style: subtitleStyle.copyWith(fontWeight: FontWeight.bold),),
-                    const SizedBox(
-                      width: 10,
-                    )
-                  ],
-                ),
-              ),
-              Expanded(
-                flex: 3,
-                child: Container(
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: white.withOpacity(0.4),
-                    borderRadius: BorderRadius.circular(20)
+        GestureDetector(
+          onTap: () {
+            showbottomsheet(firstdata, seconddata, index);
+          },
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 5,horizontal: 10),
+            padding: const EdgeInsets.symmetric(vertical: 8,horizontal: 10),
+            decoration: BoxDecoration(
+              color: white.withOpacity(0.4),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 5,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(firstdata.teams!.firstWhere((element) => element.id == seconddata[index].teamH).name.toString(), style: subtitleStyle.copyWith(fontWeight: FontWeight.bold),),
+                      const SizedBox(
+                        width: 10,
+                      )
+                    ],
                   ),
-                  child: seconddata[index].teamHScore == -1 && seconddata[index].teamAScore == -1
-                    ? Text(DateFormat.jm().format(seconddata[index].kickoffTime.toLocal()),style: subtitleStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 14,), )
-                    : Text("${seconddata[index].teamHScore} - ${seconddata[index].teamAScore}",style: subtitleStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 14,), )
-                ) 
-              ),
-              Expanded(
-                flex: 5,
-                child: Row(
-                  children: [
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    Text(firstdata.teams!.firstWhere((element) => element.id == seconddata[index].teamA).name.toString(), style: subtitleStyle.copyWith(fontWeight: FontWeight.bold),),
-                  ],
                 ),
-              ),
-              
-            ],
+                Expanded(
+                  flex: 3,
+                  child: Container(
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: white.withOpacity(0.4),
+                      borderRadius: BorderRadius.circular(20)
+                    ),
+                    child: seconddata[index].teamHScore == -1 && seconddata[index].teamAScore == -1
+                      ? Text(DateFormat.jm().format(seconddata[index].kickoffTime.toLocal()),style: subtitleStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 14,), )
+                      : Text("${seconddata[index].teamHScore} - ${seconddata[index].teamAScore}",style: subtitleStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 14,), )
+                  ) 
+                ),
+                Expanded(
+                  flex: 5,
+                  child: Row(
+                    children: [
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Text(firstdata.teams!.firstWhere((element) => element.id == seconddata[index].teamA).name.toString(), style: subtitleStyle.copyWith(fontWeight: FontWeight.bold),),
+                    ],
+                  ),
+                ),
+                
+              ],
+            ),
           ),
         ),
       ],
@@ -211,6 +240,86 @@ class _FixturesScreenState extends ConsumerState<FixturesScreen> {
     }
 
     return uniqueDates.values.toList();
+  }
+  
+  void showbottomsheet(BootStrapModel firstdata, List<FixtureModel> seconddata, index) {
+    showModalBottomSheet(
+      context: context, 
+      elevation: 5,
+      isScrollControlled: true,
+      useSafeArea: false,
+      backgroundColor: dark,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      builder: (context) {
+        return SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Container(
+            padding: const EdgeInsets.all(15),
+            child: Column(
+              children: [
+                Container(
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.all(10),
+                  width: 100,
+                  height: 3,
+                  color: white,
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: seconddata[index].stats.length,
+                  itemBuilder: (context, statsindex) => Column(
+                    children: [
+                      seconddata[index].stats[statsindex].a.isNotEmpty || seconddata[index].stats[statsindex].h.isNotEmpty
+                        ? 
+                        Container(
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          color: white.withOpacity(0.2),
+                          child: Text(seconddata[index].stats[statsindex].identifier.replaceAll(RegExp(r'_'), ' ').toUpperCase(), style: subtitleStyle.copyWith(fontWeight: FontWeight.bold))
+                        )
+                        : Container(),
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 1,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: List.generate(
+                                seconddata[index].stats[statsindex].identifier == "bps" 
+                                  ? 5
+                                  : seconddata[index].stats[statsindex].h.length, (hindex) => 
+                                Text(
+                                  "${firstdata.elements!.firstWhere((element) => element.id == seconddata[index].stats[statsindex].h[hindex].element).webName}${seconddata[index].stats[statsindex].h[hindex].value == 1 ? "" : "(${seconddata[index].stats[statsindex].h[hindex].value.toString()})"}", style: subtitleStyle, )
+                              )
+                            )
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: List.generate(
+                                seconddata[index].stats[statsindex].identifier == "bps" 
+                                  ? 5
+                                  : seconddata[index].stats[statsindex].a.length , (aindex) => 
+                                Text("${firstdata.elements!.firstWhere((element) => element.id==seconddata[index].stats[statsindex].a[aindex].element ).webName}${seconddata[index].stats[statsindex].a[aindex].value == 1 ? "" : "(${seconddata[index].stats[statsindex].a[aindex].value})"}", style: subtitleStyle, )
+                              )
+                            )
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }, 
+    );
   }
 
 }

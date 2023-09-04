@@ -10,7 +10,7 @@ String fixtureModelToJson(List<FixtureModel> data) => json.encode(List<dynamic>.
 
 class FixtureModel {
     int code;
-    num event;
+    int event;
     bool finished;
     bool finishedProvisional;
     int id;

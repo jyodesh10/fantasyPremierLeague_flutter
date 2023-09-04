@@ -1,5 +1,7 @@
 
 
+// ignore_for_file: must_be_immutable, unused_local_variable
+
 import 'package:fantasypl/model/bootstrap_model.dart';
 import 'package:fantasypl/widget/custom_appbar.dart';
 import 'package:flutter/material.dart';

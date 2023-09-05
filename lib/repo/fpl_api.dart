@@ -9,6 +9,7 @@ import '../model/bootstrap_model.dart';
 import '../model/fixture_model.dart';
 import '../model/history_model.dart';
 import '../model/league_model.dart';
+import '../model/live_model.dart';
 import '../model/picks_model.dart';
 import '../model/player_model.dart';
 import '../model/transfer_model.dart';
@@ -74,6 +75,17 @@ class FplApi{
       return PicksModel.fromJson(data);
     } else {
       throw Exception('Failed to fetch team picks');
+    }
+  }
+
+  Future<LiveModel> fetchLive(int gw) async {
+    final response = await http.get(Uri.parse('$base/event/$gw/live/'));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      return LiveModel.fromJson(data);
+    } else {
+      throw Exception('Failed to fetch live');
     }
   }
 

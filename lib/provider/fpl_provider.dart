@@ -6,6 +6,7 @@ import 'package:tuple/tuple.dart';
 import '../model/bootstrap_model.dart';
 import '../model/fixture_model.dart';
 import '../model/history_model.dart';
+import '../model/live_model.dart';
 import '../model/picks_model.dart';
 import '../model/player_model.dart';
 import '../model/transfer_model.dart';
@@ -18,6 +19,7 @@ final historyDataProvider = FutureProvider.autoDispose.family<HistoryModel,int>(
 final transferDataProvider = FutureProvider.autoDispose.family<List<TransferModel>,int>((ref,teamId) => ref.watch(fplProvider).fetchTransfer(teamId));
 final playerDataProvider = FutureProvider.autoDispose.family<PlayerModel,int>((ref,teamId) => ref.watch(fplProvider).fetchPlayer(teamId));
 final fixtureDataProvider = FutureProvider<List<FixtureModel>>((ref) => ref.watch(fplProvider).fetchFixtures());
+final liveDataProvider = FutureProvider.autoDispose.family<LiveModel, int>((ref, gw) => ref.watch(fplProvider).fetchLive(gw));
 
 final sortProvider = StateNotifierProvider<SortNotifier,String>((ref) {
   return SortNotifier();
@@ -38,5 +40,17 @@ class CurrentGWNotifier extends StateNotifier<int> {
   CurrentGWNotifier(): super(0);
 
   void getcurrentGw(int gw) => state = gw;
+  
+}
+
+
+final isLiveProvider = StateNotifierProvider<LiveNotifier,bool>((ref) {
+  return LiveNotifier();
+});
+
+class LiveNotifier extends StateNotifier<bool> {
+  LiveNotifier(): super(false);
+
+  void isLive () => state =! state;
   
 }

@@ -110,6 +110,23 @@ class ImageShimmerWidget extends StatelessWidget {
     );
   }
 }
+class TeamImageShimmerWidget extends StatelessWidget {
+  const TeamImageShimmerWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: baseColor,
+      highlightColor: highlightColor,
+      period: const Duration(milliseconds: 1000),
+      child: SizedBox(
+        height: 30,
+        width: 30,
+        child: Image.asset("assets/team.png"),
+      ),
+    );
+  }
+}
 
 class PointTabShimmerWidget extends StatelessWidget {
   const PointTabShimmerWidget({super.key});

@@ -1,7 +1,4 @@
 
-
-// ignore_for_file: must_be_immutable, unused_local_variable
-
 import 'package:fantasypl/model/bootstrap_model.dart';
 import 'package:fantasypl/widget/custom_appbar.dart';
 import 'package:flutter/material.dart';
@@ -11,77 +8,126 @@ import 'package:gradient_borders/gradient_borders.dart';
 import '../constants/constants.dart';
 import '../model/history_model.dart';
 import '../model/league_model.dart';
+import '../model/live_model.dart';
 import '../model/picks_model.dart';
 import '../model/transfer_model.dart';
 import '../provider/fpl_provider.dart';
 import '../widget/shimmer_widget.dart';
 
-class TeamScreen extends ConsumerWidget {
-  TeamScreen( {super.key,required this.teamId,required this.gw,required this.result,});
+class TeamScreen extends ConsumerStatefulWidget {
+  const TeamScreen( {super.key,required this.teamId,required this.gw,required this.result,});
 
   final int teamId;
   final int gw;
   final Result result;
-  List<Elements> allplayers = [];
-  List<Elements> goalkeepers = [];
-  List<Elements> defenders = [];
-  List<Elements> midfielders = [];
-  List<Elements> forwards = [];
-  List<Elements> bench = [];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final picksdata = ref.watch(teamPicksDataProvider(Tuple2(teamId, gw)));
+  ConsumerState<ConsumerStatefulWidget> createState() => _TeamScreenState();
+}
+
+class _TeamScreenState extends ConsumerState<TeamScreen> {
+  List<Elements> allplayers = [];
+
+  List<Elements> goalkeepers = [];
+
+  List<Elements> defenders = [];
+
+  List<Elements> midfielders = [];
+
+  List<Elements> forwards = [];
+
+  List<Elements> bench = [];
+
+  List<int> livePoints = [];
+
+  int captain = 0;
+
+  int vicecaptain = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final picksdata = ref.watch(teamPicksDataProvider(Tuple2(widget.teamId, widget.gw)));
     final bootstrapdata = ref.watch(bootsrapDataProvider);
-    final historydata = ref.watch(historyDataProvider(teamId));
-    final transferdata = ref.watch(transferDataProvider(teamId));
-    final playerdata = ref.watch(playerDataProvider(teamId));
+    final historydata = ref.watch(historyDataProvider(widget.teamId));
+    final transferdata = ref.watch(transferDataProvider(widget.teamId));
+    final playerdata = ref.watch(playerDataProvider(widget.teamId));
+    final islivedata = ref.watch(isLiveProvider);
+    final livedata = ref.watch(liveDataProvider(widget.gw));
     List<Teams> teams = [];
     List playercode = [];
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        backgroundColor: dark,
-        appBar: _buildAppbar(context),
-        body: SafeArea(
-          child: Column(
-            children: [
-              TabBar(
-                labelColor: white,
-                labelStyle: subtitleStyle.copyWith(fontWeight: FontWeight.bold),
-                unselectedLabelStyle: subtitleStyle,
-                unselectedLabelColor: white,
-                indicatorColor: lightgreen,
-                dividerColor: dark, 
-                tabs: const [
-                  Tab(
-                    text: "Points",
-                  ),
-                  Tab(
-                    text: "Details",
-                  ),
-                ]
-              ),
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    _buildPointTab(ref, bootstrapdata, teams, picksdata, playercode),
-                    _buildDetailTab(ref, bootstrapdata, historydata, transferdata)
+    return WillPopScope(
+      onWillPop: () async {
+        if(islivedata){
+          ref.read(isLiveProvider.notifier).isLive();
+        }
+        return true;
+      },
+      child: DefaultTabController(
+        length: 2,
+        child: Scaffold(
+          backgroundColor: dark,
+          appBar: _buildAppbar(context, ref, islivedata),
+          body: SafeArea(
+            child: Column(
+              children: [
+                TabBar(
+                  labelColor: white,
+                  labelStyle: subtitleStyle.copyWith(fontWeight: FontWeight.bold),
+                  unselectedLabelStyle: subtitleStyle,
+                  unselectedLabelColor: white,
+                  indicatorColor: lightgreen,
+                  dividerColor: dark, 
+                  tabs: const [
+                    Tab(
+                      text: "Points",
+                    ),
+                    Tab(
+                      text: "Details",
+                    ),
                   ]
-                )
-
-              ),
-            ],
-          ),  
+                ),
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      _buildPointTab(ref, bootstrapdata, teams, picksdata, playercode),
+                      _buildDetailTab(ref, bootstrapdata, historydata, transferdata)
+                    ]
+                  )
+    
+                ),
+              ],
+            ),  
+          ),
         ),
       ),
     );
   }
 
-  _buildAppbar(context) {
+  _buildAppbar(context,WidgetRef ref, bool islivedata) {
     return CustomAppbar(
-      title: Text(result.playerName.toString(),style: titleStyle.copyWith(color: dark, fontWeight: FontWeight.bold),) ,
-      prefixWidget: IconButton(onPressed: () { Navigator.pop(context); }, icon: const Icon(Icons.arrow_back_ios_new_rounded, color: dark, )),
+      title: Text(widget.result.playerName.toString(),style: titleStyle.copyWith(color: dark, fontWeight: FontWeight.bold),) ,
+      prefixWidget: IconButton(
+        onPressed: () {
+          Navigator.pop(context); 
+          if(islivedata){
+            ref.read(isLiveProvider.notifier).isLive();
+          }
+        }, 
+        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: dark, )
+      ),
+      sufixWidget: Padding(
+        padding: const EdgeInsets.only(top: 10,right: 15),
+        child: TextButton(
+          onPressed: (){
+            livePoints.clear();
+            ref.read(isLiveProvider.notifier).isLive();
+          }, 
+          style: ButtonStyle(
+            elevation: const MaterialStatePropertyAll(5),
+            backgroundColor: MaterialStatePropertyAll(islivedata? dark : Colors.transparent)
+          ),
+          child: Text("Live *", style: subtitleStyle.copyWith(color: islivedata? white : dark,fontWeight: FontWeight.bold ), )),
+      ),
     );
   }
 
@@ -89,7 +135,7 @@ class TeamScreen extends ConsumerWidget {
     return RefreshIndicator(
       onRefresh: () async {
         await Future.delayed(const Duration(seconds: 1));
-        return ref.refresh(teamPicksDataProvider(Tuple2(teamId, gw)));
+        return ref.refresh(teamPicksDataProvider(Tuple2(widget.teamId, widget.gw)));
       },
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -108,9 +154,13 @@ class TeamScreen extends ConsumerWidget {
                     midfielders.clear();
                     forwards.clear();
                     bench.clear();
+                    allplayers.clear();
                     for(int i = 0 ; i < firstdata.elements!.length ; i ++){
                       for(int j = 0 ; j < seconddata.picks.length; j ++){
                         playercode.add(firstdata.elements!.where((element) => element.id==seconddata.picks[j].element).map((e) => "${e.teamCode}").join(", "));
+                        if(firstdata.elements![i].id == seconddata.picks[j].element){
+                          allplayers.add(firstdata.elements![i]);
+                        }
                         if(firstdata.elements![i].elementType==1 && firstdata.elements![i].id == seconddata.picks[j].element){
                           goalkeepers.add(firstdata.elements![i]);
                         }
@@ -122,6 +172,12 @@ class TeamScreen extends ConsumerWidget {
                         }
                         if(firstdata.elements![i].elementType==4 && firstdata.elements![i].id == seconddata.picks[j].element){
                           forwards.add(firstdata.elements![i]);
+                        }
+                        if(seconddata.picks[j].isCaptain){
+                          captain = seconddata.picks[j].element;
+                        }
+                        if(seconddata.picks[j].isViceCaptain){
+                          vicecaptain = seconddata.picks[j].element;
                         }
                       }
                     }
@@ -135,7 +191,7 @@ class TeamScreen extends ConsumerWidget {
                         seconddata.activeChip != null
                           ? Text("${seconddata.activeChip} Activated",style: titleStyle, )
                           : Container(),
-                        _buildPlayerTile(seconddata, firstdata, teams, playercode)
+                        _buildPlayerTile(ref, seconddata, firstdata, teams, playercode)
                       ],
                     );
                   }, 
@@ -152,7 +208,8 @@ class TeamScreen extends ConsumerWidget {
     );
   }
 
-  _buildTopDetail(PicksModel pickdata) {
+  _buildTopDetail(PicksModel pickdata, LiveModel data, WidgetRef ref) {
+    final islivedata = ref.watch(isLiveProvider);
     return Container(
       margin: const EdgeInsets.all(15),
       child: Row(
@@ -172,7 +229,10 @@ class TeamScreen extends ConsumerWidget {
               child: Center(
                 child: Column(
                   children: [
-                    Text(pickdata.entryHistory['event_transfers']!.toInt() > 1 ? "${result.eventTotal-pickdata.entryHistory['event_transfers_cost']!.toInt()}" : result.eventTotal.toString(),style: titleStyle.copyWith(fontWeight: FontWeight.bold),),
+                    Text(
+                      islivedata
+                        ? calculateLivePoints(ref).reduce((value, element) => value + element).toString()
+                        : pickdata.entryHistory['event_transfers']!.toInt() > 1 ? "${widget.result.eventTotal-pickdata.entryHistory['event_transfers_cost']!.toInt()}" : widget.result.eventTotal.toString(),style: titleStyle.copyWith(fontWeight: FontWeight.bold),),
                     const SizedBox(
                       width: 10,
                     ),
@@ -185,7 +245,10 @@ class TeamScreen extends ConsumerWidget {
           _buildPlayerContainer(
             goalkeepers.firstWhere((element) => element.id == pickdata.picks[0].element ).code, 
             goalkeepers.firstWhere((element) => element.id == pickdata.picks[0].element ).webName, 
-            goalkeepers.firstWhere((element) => element.id == pickdata.picks[0].element ).eventPoints
+            islivedata 
+              ? data.elements.firstWhere((element) => element.id == pickdata.picks[0].element).stats.totalPoints.toString()
+              : goalkeepers.firstWhere((element) => element.id == pickdata.picks[0].element ).eventPoints,
+            goalkeepers.firstWhere((element) => element.id == pickdata.picks[0].element ).id!.toInt() 
           ),
           Expanded(
             child: Container(
@@ -216,85 +279,114 @@ class TeamScreen extends ConsumerWidget {
     );
   }
 
-
-  _buildPlayerTile(PicksModel seconddata,BootStrapModel  firstdata,List<Teams> teams,List<dynamic> playercode) {
-    return Column(
-      children: [
-        _buildTopDetail(seconddata),
-        //defenders
-        Wrap(
-          // runSpacing: 10,
-          // spacing: 10,
-          alignment: WrapAlignment.center,
-          runAlignment: WrapAlignment.center,
-          children: List.generate(defenders.length , (index) => 
-            Visibility(
-              visible: bench.contains(defenders[index]),
-              child: _buildPlayerContainer(defenders[index].code, defenders[index].webName, defenders[index].eventPoints)
-            )
-          )
-        ),
-        //Mids
-        Wrap(
-          // runSpacing: 10,
-          // spacing: 10,
-          alignment: WrapAlignment.center,
-          runAlignment: WrapAlignment.center,
-          children: List.generate(midfielders.length , (index) =>
-            Visibility(
-              visible: bench.contains(midfielders[index]),
-              child:_buildPlayerContainer(midfielders[index].code, midfielders[index].webName, midfielders[index].eventPoints)
-            )
-          ),
-        ),
-        //Forwards
-        Wrap(
-          // runSpacing: 10,
-          // spacing: 10,
-          alignment: WrapAlignment.center,
-          runAlignment: WrapAlignment.center,
-          children: List.generate(forwards.length , (index) => 
-            Visibility(
-              visible: bench.contains(forwards[index]),
-              child: _buildPlayerContainer(forwards[index].code, forwards[index].webName, forwards[index].eventPoints)
-            )
-          ),
-        ),
-        const SizedBox(
-          height: 20,
-        ),
-        //subs
-        Row(
-          // mainAxisSize: MainAxisSize.min,
+  _buildPlayerTile(WidgetRef ref, PicksModel seconddata,BootStrapModel  firstdata,List<Teams> teams,List<dynamic> playercode) {
+    final livedata = ref.watch(liveDataProvider(widget.gw));
+    final islivedata = ref.watch(isLiveProvider);
+    return livedata.when(
+      data: (data) {
+        return Column(
           children: [
-            Expanded(flex: 1, child: Center(child: Container(height: 2, margin: const EdgeInsets.only(left: 20), color: white,))),
-            Expanded(flex: 2, child: Center(child: Text("Bench", style: subtitleStyle, ))),
-            Expanded(flex: 5, child: Center(child: Container(height: 2, margin: const EdgeInsets.only(right: 20), color: white,)))
-          ],
-        ),
-        Row(
-          children: [
-            const SizedBox(width: 10,),
-            _buildPlayerContainer(
-              goalkeepers.firstWhere((element) => element.id == seconddata.picks[11].element).code, 
-              goalkeepers.firstWhere((element) => element.id == seconddata.picks[11].element).webName, 
-              goalkeepers.firstWhere((element) => element.id == seconddata.picks[11].element).eventPoints
-            ),
-            const Spacer(),
+            _buildTopDetail(seconddata, data, ref),
+            //defenders
             Wrap(
-              children: List.generate(3, (index) => 
-                _buildPlayerContainer(
-                  firstdata.elements!.firstWhere((element) => element.id == seconddata.picks[index==0? 12 : index==1? 13 : 14].element).code, 
-                  firstdata.elements!.firstWhere((element) => element.id == seconddata.picks[index==0? 12 : index==1? 13 : 14].element).webName, 
-                  firstdata.elements!.firstWhere((element) => element.id == seconddata.picks[index==0? 12 : index==1? 13 : 14].element).eventPoints,
+              // runSpacing: 10,
+              // spacing: 10,
+              alignment: WrapAlignment.center,
+              runAlignment: WrapAlignment.center,
+              children: List.generate(defenders.length , (index) => 
+                Visibility(
+                  visible: bench.contains(defenders[index]),
+                  child: _buildPlayerContainer(defenders[index].code, defenders[index].webName, 
+                  islivedata 
+                    ? data.elements.firstWhere((element) => element.id == defenders[index].id).stats.totalPoints.toString()
+                    : defenders[index].eventPoints,
+                  defenders[index].id!.toInt()
+                  )
+                )
+              )
+            ),
+            //Mids
+            Wrap(
+              // runSpacing: 10,
+              // spacing: 10,
+              alignment: WrapAlignment.center,
+              runAlignment: WrapAlignment.center,
+              children: List.generate(midfielders.length , (index) =>
+                Visibility(
+                  visible: bench.contains(midfielders[index]),
+                  child:_buildPlayerContainer(midfielders[index].code, midfielders[index].webName, 
+                  islivedata 
+                    ? data.elements.firstWhere((element) => element.id == midfielders[index].id).stats.totalPoints.toString()
+                    : midfielders[index].eventPoints,
+                  midfielders[index].id!.toInt()
+                  )
                 )
               ),
             ),
-            const SizedBox(width: 10,),
+            //Forwards
+            Wrap(
+              // runSpacing: 10,
+              // spacing: 10,
+              alignment: WrapAlignment.center,
+              runAlignment: WrapAlignment.center,
+              children: List.generate(forwards.length , (index) => 
+                Visibility(
+                  visible: bench.contains(forwards[index]),
+                  child: _buildPlayerContainer(forwards[index].code, forwards[index].webName, 
+                  islivedata 
+                    ? data.elements.firstWhere((element) => element.id == forwards[index].id).stats.totalPoints.toString()
+                    : forwards[index].eventPoints,
+                  forwards[index].id!.toInt()
+                  )
+                )
+              ),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            //subs
+            Row(
+              // mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(flex: 1, child: Center(child: Container(height: 2, margin: const EdgeInsets.only(left: 20), color: white,))),
+                Expanded(flex: 2, child: Center(child: Text("Bench", style: subtitleStyle, ))),
+                Expanded(flex: 5, child: Center(child: Container(height: 2, margin: const EdgeInsets.only(right: 20), color: white,)))
+              ],
+            ),
+            Row(
+              children: [
+                const SizedBox(width: 10,),
+                _buildPlayerContainer(
+                  goalkeepers.firstWhere((element) => element.id == seconddata.picks[11].element).code, 
+                  goalkeepers.firstWhere((element) => element.id == seconddata.picks[11].element).webName, 
+                  islivedata 
+                    ? data.elements.firstWhere((element) => element.id == seconddata.picks[11].element).stats.totalPoints.toString()
+                    : goalkeepers.firstWhere((element) => element.id == seconddata.picks[11].element).eventPoints,
+                  goalkeepers.firstWhere((element) => element.id == seconddata.picks[11].element).id!.toInt()
+                ),
+                const Spacer(),
+                Wrap(
+                  children: List.generate(3, (index) => 
+                    _buildPlayerContainer(
+                      firstdata.elements!.firstWhere((element) => element.id == seconddata.picks[index==0? 12 : index==1? 13 : 14].element).code, 
+                      firstdata.elements!.firstWhere((element) => element.id == seconddata.picks[index==0? 12 : index==1? 13 : 14].element).webName,
+                      islivedata 
+                        ? data.elements.firstWhere((element) => element.id == seconddata.picks[index==0? 12 : index==1? 13 : 14].element).stats.totalPoints.toString()
+                        : firstdata.elements!.firstWhere((element) => element.id == seconddata.picks[index==0? 12 : index==1? 13 : 14].element).eventPoints,
+                      firstdata.elements!.firstWhere((element) => element.id == seconddata.picks[index==0? 12 : index==1? 13 : 14].element).id!.toInt(),
+                    )
+                  ),
+                ),
+                const SizedBox(width: 10,),
+              ],
+            )
           ],
-        )
-      ],
-    ); 
+        ); 
+      }, 
+      error: (error, stackTrace) => Text(error.toString(),style: titleStyle,), 
+      loading: () => const PointTabShimmerWidget()
+    );
+
   }
 
   _buildDetailTab(WidgetRef ref, AsyncValue<BootStrapModel> bootstrapdata, AsyncValue<HistoryModel> historydata, AsyncValue<List<TransferModel>> transferdata ) {
@@ -441,7 +533,7 @@ class TeamScreen extends ConsumerWidget {
                   data: (data) {
                     return Column(
                       children: [
-                        Text("Gameweek $gw", style: titleStyle,),
+                        Text("Gameweek ${widget.gw}", style: titleStyle,),
                         const SizedBox(height: 10,),
                         Table(
                           border: TableBorder.all(
@@ -499,7 +591,6 @@ class TeamScreen extends ConsumerWidget {
     );
   }
 
-  
   String addDecimal (str) {
     String originalNumberString = str;
     double originalNumber = double.parse(originalNumberString);
@@ -508,37 +599,157 @@ class TeamScreen extends ConsumerWidget {
 
     return formattedNumber.toStringAsFixed(1);
   }
-  
-  _buildPlayerContainer(imgCode,name,club) {
-    return Container(
-      margin: const EdgeInsets.all(4),
-      child: Column(
-        children: [
-          Image.network(
-            "https://resources.premierleague.com/premierleague/photos/players/110x140/p$imgCode.png",
-            loadingBuilder: (context, child, loadingProgress) => loadingProgress==null ? child : const ImageShimmerWidget(),
-            errorBuilder: (context, error, stackTrace) => Image.asset("assets/logo.png",height: 80,width: 60,color: Colors.grey, colorBlendMode: BlendMode.darken,),
-            height: 80,
-            width: 60,
-          ),
-          Container(
-            width: 70,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(topLeft: Radius.circular(8),topRight: Radius.circular(8)),
-              color: Colors.grey.shade500,
+
+  _buildPlayerContainer(imgCode,name,points,int elementId) {
+    return GestureDetector(
+      onTap: () {
+        showbottomsheet(elementId);
+      },
+      child: SizedBox(
+        width: 70,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.topLeft,
+          children: [
+            Container(
+              margin: const EdgeInsets.all(4),
+              child: Column(
+                children: [
+                  Image.network(
+                    "https://resources.premierleague.com/premierleague/photos/players/110x140/p$imgCode.png",
+                    loadingBuilder: (context, child, loadingProgress) => loadingProgress==null ? child : const ImageShimmerWidget(),
+                    errorBuilder: (context, error, stackTrace) => Image.asset("assets/logo.png",height: 80,width: 60,color: Colors.grey, colorBlendMode: BlendMode.darken,),
+                    height: 80,
+                    width: 60,
+                  ),
+                  Container(
+                    width: 70,
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.only(topLeft: Radius.circular(8),topRight: Radius.circular(8)),
+                      color: Colors.grey.shade500,
+                    ),
+                    child:Center(child: Text("$name",style: subtitleStyle.copyWith(fontSize: 12.5, fontWeight: FontWeight.bold ),maxLines: 1, overflow: TextOverflow.ellipsis, )),
+                  ),
+                  Container(
+                    width: 70,
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(8),bottomRight: Radius.circular(8)),
+                      color: Colors.grey.shade600,
+                    ),          
+                    child:Center(child: Text("${elementId == captain ? int.parse(points.toString()) *2 : points.toString()}",style: subtitleStyle,)),
+                  ),
+                ],
+              ),
             ),
-            child:Center(child: Text("$name",style: subtitleStyle.copyWith(fontSize: 12.5, fontWeight: FontWeight.bold ),maxLines: 1, overflow: TextOverflow.ellipsis, )),
-          ),
-          Container(
-            width: 70,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(8),bottomRight: Radius.circular(8)),
-              color: Colors.grey.shade600,
-            ),          
-            child:Center(child: Text("$club",style: subtitleStyle,)),
-          ),
-        ],
+            elementId == captain || elementId == vicecaptain
+              ? Positioned(
+                top: 10,
+                left: 3,
+                child: CircleAvatar(
+                  backgroundColor: white,
+                  radius: 11,
+                  child: Center(child: Text(elementId == captain ? "C" : "V", style: subtitleStyle.copyWith(color: black,fontWeight: FontWeight.bold ),)),
+                ),
+              )
+              : Container()
+          ],
+        ),
       ),
+    );
+  }
+
+  List<int> calculateLivePoints(WidgetRef ref) {
+    livePoints.clear();
+    final livedata = ref.watch(liveDataProvider(widget.gw));
+    livedata.whenData((value) {
+      for (var i = 0; i < value.elements.length; i++) {
+        for (var j = 0; j < bench.length; j++) {
+          if(value.elements[i].id == bench[j].id){
+            livePoints.add(
+              value.elements[i].id == captain
+                ? value.elements[i].stats.totalPoints *2
+                : value.elements[i].stats.totalPoints
+            );
+          }
+        }
+      }
+    });
+
+    return livePoints;
+  }
+
+  void showbottomsheet(int elementId) {
+    List<Stat> stats = [];
+    final livedata = ref.watch(liveDataProvider(widget.gw));
+    livedata.whenData((value) => 
+      stats = value.elements.firstWhere((element) => element.id == elementId).explain[0].stats
+    );
+    showModalBottomSheet(
+      context: context, 
+      elevation: 5,
+      isScrollControlled: true,
+      useSafeArea: false,
+      backgroundColor: dark,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      builder: (context) {
+        return SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Container(
+            padding: const EdgeInsets.all(15),
+            child: Column(
+              children: [
+                Container(
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.all(10),
+                  width: 100,
+                  height: 3,
+                  color: white,
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Table(
+                  border: TableBorder.all(color: white, width: 1.5),
+                  children: <TableRow>[
+                    TableRow(
+                      children:[
+                        Container(
+                          color: white.withOpacity(0.3),
+                          padding: const EdgeInsets.all(12),
+                          child: Text("Statistics", style: subtitleStyle.copyWith(fontWeight: FontWeight.bold))
+                        ),
+                        Container(
+                          color: white.withOpacity(0.3),
+                          padding: const EdgeInsets.all(12),
+                          child: Text("Points", style: subtitleStyle.copyWith(fontWeight: FontWeight.bold))
+                        ),
+                      ]
+                    ),
+                    ...List.generate(stats.length, (index) =>
+                      TableRow(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            child: Text(
+                              stats[index].identifier.toUpperCase().replaceAll(RegExp(r'_'), ' '),
+                              style: subtitleStyle)
+                          ),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            child: Text(
+                              stats[index].points.toString(),
+                              style: subtitleStyle)
+                          ),
+                        ]
+                      )
+                    )
+                  ],
+                )
+              ],
+            ),
+          ),
+        );
+      }, 
     );
   }
 }

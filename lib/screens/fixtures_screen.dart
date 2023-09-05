@@ -201,10 +201,17 @@ class _FixturesScreenState extends ConsumerState<FixturesScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text(firstdata.teams!.firstWhere((element) => element.id == seconddata[index].teamH).name.toString(), style: subtitleStyle.copyWith(fontWeight: FontWeight.bold),),
+                      Text(firstdata.teams!.firstWhere((element) => element.id == seconddata[index].teamH).name.toString(), style: subtitleStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 12 ),),
                       const SizedBox(
                         width: 10,
-                      )
+                      ),
+                      Image.network("https://resources.premierleague.com/premierleague/badges/t${firstdata.teams!.firstWhere((element) => element.id == seconddata[index].teamH).code}.png",
+                        loadingBuilder: (context, child, loadingProgress) => loadingProgress==null ? child : const TeamImageShimmerWidget(),
+                        errorBuilder: (context, error, stackTrace) => Image.asset("assets/logo.png",height: 80,width: 60,color: Colors.grey, colorBlendMode: BlendMode.darken,),
+                        height: 30,
+                        width: 30,
+                      ),
+                      const SizedBox(width: 10,)
                     ],
                   ),
                 ),
@@ -229,7 +236,16 @@ class _FixturesScreenState extends ConsumerState<FixturesScreen> {
                       const SizedBox(
                         width: 10,
                       ),
-                      Text(firstdata.teams!.firstWhere((element) => element.id == seconddata[index].teamA).name.toString(), style: subtitleStyle.copyWith(fontWeight: FontWeight.bold),),
+                      Image.network("https://resources.premierleague.com/premierleague/badges/t${firstdata.teams!.firstWhere((element) => element.id == seconddata[index].teamA).code}.png",
+                        loadingBuilder: (context, child, loadingProgress) => loadingProgress==null ? child : const TeamImageShimmerWidget(),
+                        errorBuilder: (context, error, stackTrace) => Image.asset("assets/logo.png",height: 80,width: 60,color: Colors.grey, colorBlendMode: BlendMode.darken,),
+                        height: 30,
+                        width: 30,
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Text(firstdata.teams!.firstWhere((element) => element.id == seconddata[index].teamA).name.toString(), style: subtitleStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 12),),
                     ],
                   ),
                 ),
@@ -280,53 +296,102 @@ class _FixturesScreenState extends ConsumerState<FixturesScreen> {
                 const SizedBox(
                   height: 10,
                 ),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: seconddata[index].stats.length,
-                  itemBuilder: (context, statsindex) => Column(
-                    children: [
-                      seconddata[index].stats[statsindex].a.isNotEmpty || seconddata[index].stats[statsindex].h.isNotEmpty
-                        ? 
-                        Container(
+                seconddata[index].stats.isNotEmpty 
+                  ? ListView.builder(
+                    shrinkWrap: true,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: seconddata[index].stats.length,
+                    itemBuilder: (context, statsindex) => Column(
+                      children: [
+                        seconddata[index].stats[statsindex].a.isNotEmpty || seconddata[index].stats[statsindex].h.isNotEmpty
+                          ? 
+                          Container(
+                            alignment: Alignment.center,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            color: white.withOpacity(0.2),
+                            child: Text(seconddata[index].stats[statsindex].identifier.replaceAll(RegExp(r'_'), ' ').toUpperCase(), style: subtitleStyle.copyWith(fontWeight: FontWeight.bold))
+                          )
+                          : Container(),
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: List.generate(
+                                  seconddata[index].stats[statsindex].identifier == "bps" 
+                                    ? 5
+                                    : seconddata[index].stats[statsindex].h.length, (hindex) => 
+                                  Text(
+                                    "${firstdata.elements!.firstWhere((element) => element.id == seconddata[index].stats[statsindex].h[hindex].element).webName}${seconddata[index].stats[statsindex].h[hindex].value == 1 ? "" : "(${seconddata[index].stats[statsindex].h[hindex].value.toString()})"}", style: subtitleStyle, )
+                                )
+                              )
+                            ),
+                            Expanded(
+                              flex: 1,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: List.generate(
+                                  seconddata[index].stats[statsindex].identifier == "bps" 
+                                    ? 5
+                                    : seconddata[index].stats[statsindex].a.length , (aindex) => 
+                                  Text("${firstdata.elements!.firstWhere((element) => element.id==seconddata[index].stats[statsindex].a[aindex].element ).webName}${seconddata[index].stats[statsindex].a[aindex].value == 1 ? "" : "(${seconddata[index].stats[statsindex].a[aindex].value})"}", style: subtitleStyle, )
+                                )
+                              )
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                  )
+                  : Container(
                           alignment: Alignment.center,
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           color: white.withOpacity(0.2),
-                          child: Text(seconddata[index].stats[statsindex].identifier.replaceAll(RegExp(r'_'), ' ').toUpperCase(), style: subtitleStyle.copyWith(fontWeight: FontWeight.bold))
-                        )
-                        : Container(),
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 1,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: List.generate(
-                                seconddata[index].stats[statsindex].identifier == "bps" 
-                                  ? 5
-                                  : seconddata[index].stats[statsindex].h.length, (hindex) => 
-                                Text(
-                                  "${firstdata.elements!.firstWhere((element) => element.id == seconddata[index].stats[statsindex].h[hindex].element).webName}${seconddata[index].stats[statsindex].h[hindex].value == 1 ? "" : "(${seconddata[index].stats[statsindex].h[hindex].value.toString()})"}", style: subtitleStyle, )
-                              )
-                            )
+                          child: 
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 5,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Text(firstdata.teams!.firstWhere((element) => element.id == seconddata[index].teamH).name.toString(), style: subtitleStyle.copyWith(fontWeight: FontWeight.bold),),
+                                    const SizedBox(
+                                      width: 10,
+                                    )
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                flex: 3,
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: white.withOpacity(0.4),
+                                    borderRadius: BorderRadius.circular(20)
+                                  ),
+                                  child: seconddata[index].teamHScore == -1 && seconddata[index].teamAScore == -1
+                                    ? Text(DateFormat.jm().format(seconddata[index].kickoffTime.toLocal()),style: subtitleStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 14,), )
+                                    : Text("${seconddata[index].teamHScore} - ${seconddata[index].teamAScore}",style: subtitleStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 14,), )
+                                ) 
+                              ),
+                              Expanded(
+                                flex: 5,
+                                child: Row(
+                                  children: [
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    Text(firstdata.teams!.firstWhere((element) => element.id == seconddata[index].teamA).name.toString(), style: subtitleStyle.copyWith(fontWeight: FontWeight.bold),),
+                                  ],
+                                ),
+                              ),
+                              
+                            ],
                           ),
-                          Expanded(
-                            flex: 1,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: List.generate(
-                                seconddata[index].stats[statsindex].identifier == "bps" 
-                                  ? 5
-                                  : seconddata[index].stats[statsindex].a.length , (aindex) => 
-                                Text("${firstdata.elements!.firstWhere((element) => element.id==seconddata[index].stats[statsindex].a[aindex].element ).webName}${seconddata[index].stats[statsindex].a[aindex].value == 1 ? "" : "(${seconddata[index].stats[statsindex].a[aindex].value})"}", style: subtitleStyle, )
-                              )
-                            )
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
+                  )
               ],
             ),
           ),

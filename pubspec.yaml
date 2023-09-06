@@ -46,6 +46,7 @@ dependencies:
   intl: ^0.18.1
   timezone: ^0.9.2
   carousel_slider: ^4.2.1
+  flutter_inappwebview: ^5.7.2+3
 
 dev_dependencies:
   flutter_test:

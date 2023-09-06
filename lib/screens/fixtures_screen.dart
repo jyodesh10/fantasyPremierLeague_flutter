@@ -1,7 +1,9 @@
+import 'package:fantasypl/screens/standing_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gradient_borders/gradient_borders.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 import '../constants/constants.dart';
 import '../model/bootstrap_model.dart';
 import '../model/fixture_model.dart';
@@ -36,12 +38,26 @@ class _FixturesScreenState extends ConsumerState<FixturesScreen> {
         title: Text("Fixtures",style: titleStyle.copyWith(color: dark, fontWeight: FontWeight.bold),),
         sufixWidget: Padding(
           padding: const EdgeInsets.only(top: 10),
-          child: TextButton(
-            onPressed: (){
-              ref.read(currentGWProvider.notifier).getcurrentGw(nowGw-1);
-              _carouselController.animateToPage(nowGw-1);
-            }, 
-            child: Text("Current GW", style: subtitleStyle.copyWith(color: dark), )),
+          child: Row(
+            children: [
+              TextButton(
+                onPressed: (){
+                  ref.read(currentGWProvider.notifier).getcurrentGw(nowGw-1);
+                  _carouselController.animateToPage(nowGw-1);
+                }, 
+                child: Text("Current GW", style: subtitleStyle.copyWith(color: dark), )),
+              bootstrapData.when(
+                data: (data) => IconButton(
+                  onPressed: (){
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => StandingScreen(gw: data.events!.where((element) => element.isNext == true).map((e) => e.id).first!.toInt()-1), ));
+                  }, 
+                  icon: const Icon(Icons.bar_chart)
+                ), 
+                error: (error, stackTrace) => Container(), 
+                loading: () => Shimmer.fromColors(baseColor: baseColor, highlightColor: highlightColor, child: const CircleAvatar(radius: 12)),
+              )
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(onPressed: () { return ref.refresh(fixtureDataProvider);},child: const Icon(Icons.refresh_outlined), ),
